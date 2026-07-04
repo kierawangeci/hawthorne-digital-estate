@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Hawthorne's Digital Estate: The Game of Heirs</title>
+    <meta
+      name="description"
+      content="A retro 8-bit RPG based on Community S3E20. Navigate Hawthorne Manor, face your insecurities, and claim the inheritance."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="game-container">
+      <!-- CRT + transition overlays -->
+      <div id="crt-overlay"></div>
+      <div id="transition-overlay"></div>
+
+      <!-- Global floating elements -->
+      <div id="toast"></div>
+      <div id="xp-popup"></div>
+      <div id="levelup-banner">⚡ LEVEL UP!</div>
+      <div id="achievement-banner">
+        <div id="achievement-icon">🏆</div>
+        <div id="achievement-text">
+          <div id="achievement-label">ACHIEVEMENT UNLOCKED</div>
+          <div id="achievement-name"></div>
+        </div>
+      </div>
+      <div id="status-effects"></div>
+      <div id="chang-glitch">👤</div>
+      <div id="pierce-hologram">
+        <canvas id="pierce-holo-canvas" width="32" height="32"></canvas>
+      </div>
+
+      <!-- Particle canvas -->
+      <canvas id="particle-canvas" width="480" height="310"></canvas>
+
+      <!-- ══════════ TITLE SCREEN ══════════ -->
+      <div id="screen-title" class="screen active">
+        <div id="title-stars"></div>
+        <div id="title-content">
+          <div id="title-logo">
+            <div class="logo-line1">HAWTHORNE'S</div>
+            <div class="logo-line2">DIGITAL ESTATE</div>
+            <div class="logo-sub">THE GAME OF HEIRS</div>
+          </div>
+          <div id="title-sprite-row">
+            <canvas id="title-sprites" width="448" height="80"></canvas>
+          </div>
+          <div id="title-menu">
+            <button class="menu-btn" id="btn-new-game">▶ NEW GAME</button>
+            <button class="menu-btn" id="btn-continue" disabled>
+              ◈ CONTINUE
+            </button>
+            <button class="menu-btn secondary" id="btn-about">
+              ? HOW TO PLAY
+            </button>
+          </div>
+          <div id="title-blink">PRESS START</div>
+          <div id="title-credit">
+            Based on Community S3E20 "Digital Estate Planning"
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CHARACTER SELECT ══════════ -->
+      <div id="screen-charselect" class="screen">
+        <div class="screen-header">
+          <div class="screen-title-text">CHOOSE YOUR HEIR</div>
+          <div class="screen-sub">WHO WILL CLAIM THE HAWTHORNE FORTUNE?</div>
+        </div>
+        <div id="char-grid"></div>
+        <div id="char-detail">
+          <div id="char-detail-portrait">
+            <canvas id="portrait-canvas" width="96" height="96"></canvas>
+          </div>
+          <div id="char-detail-info">
+            <div id="char-detail-name">—</div>
+            <div id="char-detail-title">—</div>
+            <div id="char-detail-stats"></div>
+            <div id="char-detail-ability"></div>
+            <div id="char-detail-passive"></div>
+          </div>
+        </div>
+        <button class="menu-btn" id="btn-select-char" disabled>
+          SELECT THIS HEIR
+        </button>
+        <button class="menu-btn secondary" id="btn-back-title">◀ BACK</button>
+      </div>
+
+      <!-- ══════════ MAIN GAME SCREEN ══════════ -->
+      <div id="screen-game" class="screen">
+        <!-- HUD -->
+        <div id="hud">
+          <div id="hud-left">
+            <canvas id="hud-portrait" width="44" height="44"></canvas>
+            <div id="hud-bars">
+              <div style="display: flex; align-items: center; gap: 4px">
+                <span class="bar-label">HP</span>
+                <div class="bar-track">
+                  <div id="hp-bar" class="bar hp"></div>
+                </div>
+                <span id="hp-num" style="font-size: 4px; color: #39ff14"></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px">
+                <span class="bar-label">SP</span>
+                <div class="bar-track">
+                  <div id="sp-bar" class="bar sp"></div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px">
+                <span class="bar-label" style="color: #7c00ff">XP</span>
+                <div class="bar-track">
+                  <div id="xp-bar" class="bar xp"></div>
+                </div>
+              </div>
+            </div>
+            <div id="hud-char-info">
+              <div id="hud-name"></div>
+              <div id="hud-level"></div>
+              <div id="hud-emotion"></div>
+            </div>
+          </div>
+
+          <div id="hud-center">
+            <div id="room-name-display"></div>
+            <div id="hud-algorithm">
+              <div class="algo-row">
+                <span class="algo-label">GREED</span>
+                <div class="algo-track">
+                  <div
+                    id="algo-greed"
+                    class="algo-fill greed"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+              <div class="algo-row">
+                <span class="algo-label">FRIEND</span>
+                <div class="algo-track">
+                  <div
+                    id="algo-friend"
+                    class="algo-fill friend"
+                    style="width: 50%"
+                  ></div>
+                </div>
+              </div>
+              <div class="algo-row">
+                <span class="algo-label">CHAOS</span>
+                <div class="algo-track">
+                  <div
+                    id="algo-chaos"
+                    class="algo-fill chaos"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="hud-right">
+            <div class="gauge-label">GILBERT</div>
+            <div class="gauge-track">
+              <div id="gilbert-bar" class="bar gilbert"></div>
+            </div>
+            <div class="gauge-label">TRUST ◀▶ THREAT</div>
+            <div id="vcr-icon" title="Open Tape Menu">
+              📼 <span id="tape-count">0</span>/4
+            </div>
+          </div>
+        </div>
+
+        <!-- Game World Canvas -->
+        <canvas id="game-canvas" width="480" height="310"></canvas>
+
+        <!-- Minimap -->
+        <div id="minimap"></div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogue-box" class="hidden">
+          <div id="dialogue-portrait-wrap">
+            <canvas id="dialogue-portrait" width="56" height="56"></canvas>
+          </div>
+          <div id="dialogue-body">
+            <div id="dialogue-speaker"></div>
+            <div id="dialogue-text"></div>
+            <div id="dialogue-options"></div>
+            <div id="dialogue-continue">▼ TAP / ENTER TO CONTINUE</div>
+          </div>
+        </div>
+
+        <!-- Combat Panel -->
+        <div id="combat-panel" class="hidden">
+          <div id="turn-indicator" class="player-turn">YOUR TURN</div>
+          <div id="combat-top">
+            <div id="combat-enemy-area">
+              <canvas id="combat-enemy-canvas" width="96" height="96"></canvas>
+            </div>
+            <div id="enemy-info">
+              <div id="enemy-name"></div>
+              <div id="enemy-hp-wrap">
+                <div class="bar-track wide">
+                  <div id="enemy-hp-bar" class="bar enemy-hp"></div>
+                </div>
+              </div>
+              <div id="enemy-weakness"></div>
+              <div
+                id="enemy-desc"
+                style="
+                  font-family: var(--font-body);
+                  font-size: 12px;
+                  color: #4a3f6b;
+                  margin-top: 4px;
+                  line-height: 1.3;
+                "
+              ></div>
+            </div>
+          </div>
+          <div id="combat-actions">
+            <button class="combat-btn" id="cbtn-attack">⚔ ATTACK</button>
+            <button class="combat-btn" id="cbtn-ability">✨ ABILITY</button>
+            <button class="combat-btn" id="cbtn-item">🧪 ITEM</button>
+            <button class="combat-btn" id="cbtn-flee">🏃 FLEE</button>
+          </div>
+          <div id="combat-log"></div>
+        </div>
+
+        <!-- Skill Check Overlay -->
+        <div id="skill-check-overlay" class="hidden">
+          <div id="skill-check-inner"></div>
+        </div>
+
+        <!-- Menu Overlay -->
+        <div id="menu-overlay" class="hidden">
+          <div id="menu-header">INVENTORY & STATUS</div>
+          <div id="menu-stats-row">
+            <span
+              >GOLD: <span id="menu-gold" style="color: #ffd700">0</span></span
+            >
+            <span
+              >FLOOR:
+              <span id="menu-floor" style="color: #00f5ff">1</span></span
+            >
+            <span
+              >TIME:
+              <span id="menu-time" style="color: #7c00ff">00:00</span></span
+            >
+          </div>
+          <div id="menu-tabs">
+            <button class="tab-btn active" data-tab="inventory">ITEMS</button>
+            <button class="tab-btn" data-tab="party">PARTY</button>
+            <button class="tab-btn" data-tab="tapes">TAPES</button>
+            <button class="tab-btn" data-tab="map">MAP</button>
+            <button class="tab-btn" data-tab="log">LOG</button>
+          </div>
+          <div id="menu-content"></div>
+          <button class="menu-btn secondary" id="btn-close-menu">
+            ✕ CLOSE [ESC]
+          </button>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+          <div id="dpad">
+            <button class="dpad-btn" id="dpad-up">▲</button>
+            <div class="dpad-row">
+              <button class="dpad-btn" id="dpad-left">◀</button>
+              <button class="dpad-btn dpad-center" id="dpad-center">✦</button>
+              <button class="dpad-btn" id="dpad-right">▶</button>
+            </div>
+            <button class="dpad-btn" id="dpad-down">▼</button>
+          </div>
+          <button id="btn-quick-item" title="Quick Use Item">🧪</button>
+          <div id="action-btns">
+            <button class="action-btn" id="abtn-menu">☰</button>
+            <button class="action-btn" id="abtn-interact">A</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ ENDING SCREEN ══════════ -->
+      <div id="screen-ending" class="screen">
+        <div id="ending-content">
+          <div id="ending-title"></div>
+          <canvas id="ending-canvas" width="448" height="180"></canvas>
+          <div id="ending-text"></div>
+          <button class="menu-btn gold" id="btn-play-again">
+            ▶ PLAY AGAIN
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════ ABOUT / HOW TO PLAY ══════════ -->
+      <div id="screen-about" class="screen">
+        <div id="about-content">
+          <div class="screen-title-text">HOW TO PLAY</div>
+          <div class="about-chars">
+            <canvas id="about-sprites" width="336" height="56"></canvas>
+          </div>
+          <div id="about-controls">
+            🎮 WASD / Arrow Keys — Move between rooms<br />
+            ENTER / Space — Interact / Advance dialogue<br />
+            ESC / M — Open menu<br />
+            Q — Quick use item<br />
+            📱 D-Pad — Move &nbsp;|&nbsp; A — Interact &nbsp;|&nbsp; ☰ — Menu
+          </div>
+          <p>
+            Navigate <strong style="color: var(--cyan)">7 rooms</strong>,
+            recruit companions,<br />fight enemies, collect
+            <strong style="color: var(--gold)">4 tapes</strong> for the secret
+            ending.
+          </p>
+          <p class="small">
+            Each character has a unique combat mini-game.<br />Gilbert is not to
+            be trusted.
+          </p>
+          <blockquote>
+            "Are we who we say we are, or who the game forces us to be?"
+          </blockquote>
+          <button class="menu-btn secondary" id="btn-back-about">◀ BACK</button>
+        </div>
+      </div>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
